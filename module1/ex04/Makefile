@@ -1,6 +1,6 @@
 CC        := avr-gcc
 
-PORT := ch340
+PORT := /dev/ttyUSB0
 
 all: hex flash
 
