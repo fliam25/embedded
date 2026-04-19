@@ -6,7 +6,7 @@
 #define BAUD 115200
 #define MYUBRR ((F_CPU / (8UL * BAUD)) - 1)  // U2X formula
 //screen /dev/ttyUSB0 115200
-void USART_Init(unsigned int ubrr)
+void uart_init(unsigned int ubrr)
 {
     TCCR1B = (1 << WGM12); // turn ON CTC on CR1A
     OCR1A = 31244; //set timer stop at 2s 
@@ -20,28 +20,28 @@ void USART_Init(unsigned int ubrr)
     SREG |= (1 << 7);   // like sei , turn on interrupt
 }
 
-void USART_putchar(unsigned char c)
+void uart_tx(unsigned char c)
 {
     while (!(UCSR0A & (1 << UDRE0)));
     UDR0 = c;
 }
 
-void USART_printstr(const char *str)
+void uart_printstr(const char *str)
 {
     while (*str)
-        USART_putchar(*str++);
+        uart_tx(*str++);
 }
 
 void TIMER1_COMPA_vect() __attribute__ ((signal, used));
 void TIMER1_COMPA_vect()
 {
-    USART_printstr("Hello World!\r\n");
+    uart_printstr("Hello World!\r\n");
 } 
 
 
-int main(void)
+void main(void)
 {
-    USART_Init(MYUBRR);
+    uart_init(MYUBRR);
     while (1)
     {
     }

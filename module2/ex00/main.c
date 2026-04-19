@@ -6,7 +6,7 @@
 #define BAUD 115200
 #define MYUBRR ((F_CPU / (8UL * BAUD)) - 1)  // U2X formula
 //screen /dev/ttyUSB0 115200
-void USART_Init(unsigned int ubrr)
+void uart_init(unsigned int ubrr)
 {
     UCSR0A = (1 << U2X0);                          // enable double speed
     UBRR0H = (unsigned char)(ubrr >> 8);
@@ -15,18 +15,18 @@ void USART_Init(unsigned int ubrr)
     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);       // 8N1
 }
 
-void USART_Transmit(unsigned char data)
+void uart_tx(unsigned char data)
 {
     while (!(UCSR0A & (1 << UDRE0)));
     UDR0 = data;
 }
 
-int main(void)
+void main(void)
 {
-    USART_Init(MYUBRR);
+    uart_init(MYUBRR);
     while (1)
     {
-        USART_Transmit('Z');
+        uart_tx('Z');
         _delay_ms(1000);
     }
 }
