@@ -7,15 +7,17 @@
 void init_rgb()
 {
   DDRD |= ((1 << PD3) | (1 << PD5) | (1 << PD6)); // PD3 BLUE. PD5 RED, PD6 VERT
-  TCCR0A = (1 << COM0A1) || (1 << COM0B1) || (1 << WGM01) || (1 << WGM0); // Set compare match on pin PD6 (OC0A) and PD5(OC0B) and turn on FAST PWM mode on timer 0
-  TCCR2A = (1 << COM2B1) || (1 << WGM21) || (1 << WGM20); // set compare match on PD3 (OC2B) and turn on FAST PWM on tiemr 2
+  TCCR0A = (1 << COM0A1) | (1 << COM0A0) | (1 << COM0B1) | (1 << COM0B0) | (1 << WGM01) | (1 << WGM00); // Set inverting compare match on pin PD6 (OC0A) and PD5(OC0B) and turn on FAST PWM mode on timer 0
+  TCCR2A = (1 << COM2B1) | (1 << COM2B0) | (1 << WGM21) | (1 << WGM20); // set inverting compare match on PD3 (OC2B) and turn on FAST PWM on timer 2
+  TCCR0B = (1 << CS01) | (1 << CS00); //prescaler
+  TCCR2B = (1 << CS22);    //prescaler
 }
 
 void set_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
-  OCR0B = r;
-  OCR0A = g;
-  OCR2B = b;
+    OCR0B = 255 - r;
+    OCR0A = 255 - g;
+    OCR2B = 255 - b;
 }
 
 void wheel(uint8_t pos) {
@@ -33,12 +35,15 @@ void wheel(uint8_t pos) {
   }
 }
 
-void main(void)
+int main(void)
 {
-  int i = 0;
-  while(1)
-  {
-    wheel(i)
-      i++;
-  }
+    init_rgb();
+    set_rgb(0, 0, 0);
+    int i = 0;
+    while(1)
+    {
+        wheel(i++);
+        _delay_ms(30);
+    }
+    return 0;
 }
