@@ -35,7 +35,7 @@ void INT0_vect()
     }
     else
         pressed = 0;
-    EIFR |= (1 << INTF0);
+    EIFR |= (1 << INTF0); // clear any pending int0 flag
     TCNT0 = 0; //reset counter
     TCCR0B |= (1 << CS02) | (1 << CS00); // prescaler 1024 (turn on timer)
 } 

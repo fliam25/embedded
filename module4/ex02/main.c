@@ -31,8 +31,8 @@ void    init()
     PORTD |= (1 << PD4); // turn on pull up resistor on pin PD4 (making the pin high by default when not pressed and avoiding incorrect reading cause of noise)
     EICRA |= (1 << ISC00);  // Trigger interrupt on any change on INT0
     EIMSK |= (1 << INT0);   // Enable INT0
-    EICRA |= (1 << ISC10); // Trigger interrupt on any change on INT1
-    EIMSK |= (1 << INT1);   // Enable INT0
+    PCICR |= (1 << PCIE2);   // Enable intterupt on any change between PIN 23-16 (Check datasheet)
+    PCMSK2 |= (1 << PCINT20); // Specifficaly enable interrupt on PD4
 
 
     SREG |= (1 << 7);   // like sei , turn on interrupt
@@ -42,13 +42,14 @@ void    init()
 void INT0_vect() __attribute__ ((signal, used, externally_visible));
 void INT0_vect()
 {
-    EIMSK &= ~(1 << INT1); //disable INT0
+    EIMSK &= ~(1 << INT0); //disable INT0
     if(sw0_pressed == 0)
     {
         val++;
         if(val > 15)
             val = 0;
-        PORTB |= (val & 7) | ((val & 8) << 1 );
+        PORTB &= ~((1 << PB0) | (1 << PB1) | (1 << PB2) | (1 << PB4));            
+        PORTB |= (val & 7) | ((val & 8) << 1 ); // val & 00000111 + val & (00001000 << 1 = 00010000)
         sw0_pressed = 1;
     }
     else
@@ -58,21 +59,21 @@ void INT0_vect()
     TCCR0B |= (1 << CS02) | (1 << CS00); // prescaler 1024 (turn on timer)
 } 
 
-void INT1_vect() __attribute__ ((signal, used, externally_visible));
-void INT1_vect()
+void PCINT2_vect() __attribute__ ((signal, used, externally_visible));
+void PCINT2_vect()
 {
-    EIMSK &= ~(1 << INT1); //disable INT1
+    PCICR &= ~(1 << PCIE2); // Disable pin 23-16 interrupt
     if(sw2_pressed == 0)
     {
-        val--;
-        if(val < 0)
-            val = 0;
+        if(val > 0)
+            val--;
+        PORTB &= ~((1 << PB0) | (1 << PB1) | (1 << PB2) | (1 << PB4));
         PORTB |= (val & 7) | ((val & 8) << 1 );
         sw2_pressed = 1;
     }
     else
         sw2_pressed = 0;
-    EIFR |= (1 << INTF1);
+    PCIFR |= (1 << PCIF2);// clear any pending PCINT2
     TCNT2 = 0; //reset counter
     TCCR2B |= (1 << CS02) | (1 << CS00); // prescaler 1024 (turn on timer)
 } 
@@ -100,13 +101,14 @@ void TIMER2_OVF_vect()
         sw2_ovf_count = 0;
         TCCR2B = 0;                         // stop timer
         TCNT2 = 0;                          // reset counter
-        EIFR |= (1 << INTF1);    // clear any pending INT0 flag
-        EIMSK |= (1 << INT1);              // re-enable INT0
+        PCIFR |= (1 << PCIF2);// clear any pending PCINT2
+        PCICR |= (1 << PCIE2);   // Enable intterupt on any change between PIN 23-16 (Check datasheet)
     }
 } 
 
 int main()
 {
+    init();
     while (1) {
                
     }

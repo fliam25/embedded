@@ -9,7 +9,7 @@ void    init()
     //timer0
     TCCR0A = (1 << WGM01);                          // turn on CTC
     TCCR0B = (1 << CS02); // prescaler 256
-    OCR0A = 124;          // 2 ms
+    OCR0A = 124;          // 2 ms -> 256/16000000 = 16 us, 2000 us / 16 us = 124
     TIMSK0 |= (1 << OCIE0A);             // enable intterupt on compare match with OCR0A
     //timer 1
     TCCR1A = (1 << COM1A1) | (1 << WGM11); //turn on led when count go back to 0 (p.140) 
