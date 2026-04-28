@@ -9,7 +9,7 @@
 void init()
 {
     ADCSRA |= (1 << ADEN); //Enable ADC p.259
-    ADMUX |= (1 << REFS0); // use AVCC p.257
+    ADMUX = (1 << REFS0) | (1 << ADLAR); // use AVCC p.257 and align result on the left to be on 8 bit
     
 }
 
