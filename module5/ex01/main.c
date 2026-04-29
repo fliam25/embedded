@@ -32,13 +32,13 @@ void uart_printstr(const char *str)
 //ADC
 void adc_init()
 {
-	ADMUX = (1 << REFS0) | (1 << ADLAR) ; // REFSO = use AVCC p.257 |||| ADLAR = align result on the left to be on 8 bit ||| set all mux to 0 = select ADC0 as input (potentiometer)(cf schematic and p.258)
 	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // ADEN = enable ADC ||| ADSPn = prescaler 128 p.249/p.259
 }
 
 
-uint8_t adc_read(void)
+uint8_t adc_read(uint8_t id)
 {
+	ADMUX = (1 << REFS0) | (1 << ADLAR) | (id & 0x0F);
 	ADCSRA |= (1 << ADSC);         // Start conversion
 	while (ADCSRA & (1 << ADSC));  // Wait until convertion is done
 	return ADCH;                    // return result (only ADCH cause only 8 bit needed)
@@ -55,9 +55,7 @@ void ft_8inttohex(uint8_t val)
 	const char *hex = "0123456789abcdef";
 	uart_tx(hex[val >> 4]); // first char
 	uart_tx(hex[val & 0b00001111]); // second char
-	uart_printstr("\r\n");
 }
-
 
 void main(void)
 {
@@ -65,6 +63,11 @@ void main(void)
 	while (1)
 	{
 		_delay_ms(20);
-		ft_8inttohex(adc_read());
+		ft_8inttohex(adc_read(0));
+		uart_printstr(", ");
+		ft_8inttohex(adc_read(1));
+		uart_printstr(", ");
+		ft_8inttohex(adc_read(2));
+		uart_printstr("\r\n");	
 	}
 }
